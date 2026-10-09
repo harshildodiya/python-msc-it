@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>To-Do List</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f7;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #222;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 35px;
+        }
+
+        .add-box,
+        .task {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        button,
+        .btn {
+            border: none;
+            padding: 9px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        .add-btn {
+            background: #007bff;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .add-btn:hover {
+            background: #0056b3;
+        }
+
+        .complete-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .complete-btn:hover {
+            background: #218838;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: black;
+        }
+
+        .edit-btn:hover {
+            background: #e0a800;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .task h3 {
+            margin-top: 0;
+            color: #222;
+        }
+
+        .task p {
+            color: #555;
+        }
+
+        .high {
+            color: red;
+            font-weight: bold;
+        }
+
+        .medium {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .low {
+            color: green;
+            font-weight: bold;
+        }
+
+        .completed {
+            opacity: 0.7;
+        }
+
+        .completed h3 {
+            text-decoration: line-through;
+        }
+
+        .edit-form {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .empty {
+            color: #777;
+            font-style: italic;
+        }
+
+        .actions {
+            margin-top: 15px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1> My ToDo List</h1>
+
+
+    <div class="add-box">
+
+        <h2>Add New Task</h2>
+
+        <form action="/add" method="POST">
+
+            <label>Task Title</label>
+
+            <input
+                type="text"
+                name="title"
+                maxlength="150"
+                placeholder="Enter task title"
+                required
+            >
+
+
+            <label>Description</label>
+
+            <textarea
+                name="description"
+                maxlength="300"
+                placeholder="Enter task description"
+            ></textarea>
+
+
+            <label>Priority</label>
+
+            <select name="priority" required>
+
+                <option value="High">
+                    High
+                </option>
+
+                <option value="Medium" selected>
+                    Medium
+                </option>
+
+                <option value="Low">
+                    Low
+                </option>
+
+            </select>
+
+
+            <label>Due Date</label>
+
+            <input
+                type="date"
+                name="due_date"
+                required
+            >
+
+
+            <button
+                type="submit"
+                class="btn add-btn"
+            >
+                Add Task
+            </button>
+
+        </form>
+
+    </div>
+
+    <h2>Pending Tasks</h2>
+
+    {% if pending_tasks %}
+
+        {% for task in pending_tasks %}
+
+        <div class="task">
+
+            <h3>
+                {{ task.title }}
+            </h3>
+
+
+            <p>
+                {{ task.description }}
+            </p>
+
+
+            <p>
+
+                <strong>Priority:</strong>
+
+                <span class="{{ task.priority|lower }}">
+
+                    {{ task.priority }}
+
+                </span>
+
+            </p>
+
+
+            <p>
+
+                <strong>Due Date:</strong>
+
+                {{ task.due_date.strftime("%d-%m-%Y") }}
+
+            </p>
+
+
+            <div class="actions">
+
+                <!-- Mark Completed -->
+
+                <a
+                    href="/toggle/{{ task.id }}"
+                    class="btn complete-btn"
+                >
+                    Mark Completed
+                </a>
+
+                <button
+                    type="button"
+                    class="btn edit-btn"
+                    data-id="{{ task.id }}"
+                    onclick="editTask(this)"
+                >
+                    Edit
+                </button>
+
+
+                <!-- Delete -->
+
+                <form
+                    action="/delete/{{ task.id }}"
+                    method="POST"
+                    style="display:inline;"
+                >
+
+                    <button
+                        type="submit"
+                        class="btn delete-btn"
+                    >
+                        Delete
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <div
+                id="edit-{{ task.id }}"
+                class="edit-form"
+            >
+
+                <form
+                    action="/update/{{ task.id }}"
+                    method="POST"
+                >
+
+                    <label>Task Title</label>
+
+                    <input
+                        type="text"
+                        name="title"
+                        maxlength="150"
+                        value="{{ task.title }}"
+                        required
+                    >
+
+
+                    <label>Description</label>
+
+                    <textarea
+                        name="description"
+                        maxlength="300"
+                    >{{ task.description }}</textarea>
+
+
+                    <label>Priority</label>
+
+                    <select name="priority">
+
+                        <option
+                            value="High"
+                            {% if task.priority == "High" %}
+                            selected
+                            {% endif %}
+                        >
+                            High
+                        </option>
+
+                        <option
+                            value="Medium"
+                            {% if task.priority == "Medium" %}
+                            selected
+                            {% endif %}
+                        >
+                            Medium
+                        </option>
+
+                        <option
+                            value="Low"
+                            {% if task.priority == "Low" %}
+                            selected
+                            {% endif %}
+                        >
+                            Low
+                        </option>
+
+                    </select>
+
+
+                    <label>Due Date</label>
+
+                    <input
+                        type="date"
+                        name="due_date"
+                        value="{{ task.due_date.strftime('%Y-%m-%d') }}"
+                        required
+                    >
+
+
+                    <button
+                        type="submit"
+                        class="btn complete-btn"
+                    >
+                        Update Task
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="empty">
+            No pending tasks.
+        </p>
+
+    {% endif %}
+
+
+    <h2>Completed Tasks</h2>
+
+    {% if completed_tasks %}
+
+        {% for task in completed_tasks %}
+
+        <div class="task completed">
+
+            <h3>
+                {{ task.title }}
+            </h3>
+
+
+            <p>
+                {{ task.description }}
+            </p>
+
+
+            <p>
+
+                <strong>Priority:</strong>
+
+                {{ task.priority }}
+
+            </p>
+
+
+            <p>
+
+                <strong>Due Date:</strong>
+
+                {{ task.due_date.strftime("%d-%m-%Y") }}
+
+            </p>
+
+
+            <div class="actions">
+
+                <!-- Mark Pending -->
+
+                <a
+                    href="/toggle/{{ task.id }}"
+                    class="btn edit-btn"
+                >
+                    Mark Pending
+                </a>
+
+
+                <!-- Delete -->
+
+                <form
+                    action="/delete/{{ task.id }}"
+                    method="POST"
+                    style="display:inline;"
+                >
+
+                    <button
+                        type="submit"
+                        class="btn delete-btn"
+                    >
+                        Delete
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="empty">
+            No completed tasks.
+        </p>
+
+    {% endif %}
+
+</div>
+
+<script>
+
+    function editTask(button) {
+
+        const id = button.getAttribute("data-id");
+
+        const form = document.getElementById("edit-" + id);
+
+        if (form.style.display === "none" ||
+            form.style.display === "") {
+
+            form.style.display = "block";
+
+        } else {
+
+            form.style.display = "none";
+
+        }
+
+    }
+
+</script>
+
+
+</body>
+
+</html>
